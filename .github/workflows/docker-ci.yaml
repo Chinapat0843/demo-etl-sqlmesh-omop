@@ -62,15 +62,15 @@ jobs:
       - name: Build and start Docker Compose for testing
         if: github.event.pull_request.merged == false  # Only build and test if PR is not merged
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+            POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+            POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+            POSTGRES_PORT: 5432
         
         run: |
           docker-compose up --build -d  # Build and start services in detached mode
-          docker-compose exec sqlmesh poetry run sqlmesh plan  # Run SQLMesh plan inside the container
+          docker-compose exec sqlmesh poetry run sqlmesh info  # Run SQLMesh plan inside the container
 
     #   # Step 5: Run CI/CD Bot on PR branch (if not merged)
     #   - name: Run SQLMesh CI/CD Bot
