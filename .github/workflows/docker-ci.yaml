@@ -91,7 +91,7 @@ jobs:
 
 
           docker-compose exec \
-            -e GITHUB_EVENT_PATH=/event_dir/event.json \
+            -e GITHUB_EVENT_PATH=/event_dir/home/runner/work/_temp/_github_workflow/event.json \
             -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
             -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
             -e GITHUB_TOKEN=${GITHUB_TOKEN} \
