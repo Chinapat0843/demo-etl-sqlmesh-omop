@@ -2,11 +2,11 @@ gateways:
   local:
     connection:
       type: postgres
-      host: postgres
+      host: ${{ secrets.POSTGRES_HOST}}
       port: 5432
-      database: sqlmesh_db
-      user: sqlmesh_user
-      password: sqlmesh_password
+      database: ${{ secrets.POSTGRES_DB}}
+      user: ${{ secrets.POSTGRES_USER}}
+      password: ${{ secrets.POSTGRES_PASSWORD}}
 
 default_gateway: local
 

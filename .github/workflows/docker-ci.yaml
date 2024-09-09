@@ -2,23 +2,23 @@ name: SQLMesh CI/CD Bot
 run-name: 🚀SQLMesh Bot 🚀
 
 on:
-  pull_request:
-    types:
-      - synchronize
-      - opened
-
-  pull_request_review:
-    types:
-      - edited
-      - submitted
-      - dismissed
-  issue_comment:
-    types:
-      - created
+    pull_request:
+        types:
+            - synchronize
+            - opened
+      
+    pull_request_review:
+        types:
+            - edited
+            - submitted
+            - dismissed
+    issue_comment:
+        types:
+            - created
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+    cancel-in-progress: true
 
 jobs:
   sqlmesh:
@@ -30,7 +30,9 @@ jobs:
       checks: write  # Required to update check runs
       pull-requests: write  # Required to merge
 
+
     steps:
+
       # Step 0: Setup Python 3.11
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
@@ -54,8 +56,8 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
 
-      # Step 3: Install Docker Compose and Poetry
-      - name: Install Docker Compose and Poetry
+      # Step 3: Install Docker Compose (fix the error)
+      - name: Install Docker Compose
         run: |
           DOCKER_COMPOSE_VERSION=2.12.2  # Set the specific version to install
           sudo curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -63,32 +65,35 @@ jobs:
           docker-compose version  # Verify that Docker Compose is installed
           pip install poetry
           poetry install --no-root --no-dev
+          
+
 
       # Step 4: Build and start Docker Compose services (for PRs that are not merged)
       - name: Build and start Docker Compose for testing
         if: github.event.pull_request.merged == false  # Only build and test if PR is not merged
+        env:
+            POSTGRES_USER: ${{ secrets.POSTGRES_USER}}
+            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD}}
+            POSTGRES_DB: ${{ secrets.POSTGRES_DB}}
+            POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+            POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
         run: |
           docker-compose up --build -d  # Build and start services in detached mode
           docker-compose exec sqlmesh poetry run sqlmesh info  # Run SQLMesh plan inside the container
 
-      # Step 5: Copy the GitHub event.json file to Docker and run SQLMesh CI/CD Bot inside the container
-      - name: Copy GitHub event to Docker container and run CI/CD Bot
+      # Step 5: Run CI/CD Bot on PR branch (if not merged)
+      - name: Copy `event.json` to sqlmesh container and run CI/CD Bot
         if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
         run: |
-          # Copy the GitHub event.json file to the Docker container
-          docker cp $GITHUB_EVENT_PATH sqlmesh-container:/github_event.json
-          
-          # Run the bot inside the container, using the copied event.json file
-          docker-compose exec sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --event-path /github_event.json --token ${{ secrets.GITHUB_TOKEN }} run-all
+            poetry run sqlmesh_cicd -p ${{github.workspace }}/sqlmesh_project github --token ${{ secrets.GITHUB_TOKEN }} run-all
+      # # Step 6: Deploy to Production only if PR is merged into the main branch
+      # - name: Deploy to Production
+      #   if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+      #   run: |
+      #     docker-compose up --build -d  # Ensure everything is built and up
+      #     poetry run sqlmesh_cicd -p ${{ github.workspace }}/sqlmesh_project github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
 
-      # Step 6: Deploy to Production only if PR is merged into the main branch
-      - name: Deploy to Production
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-        run: |
-          docker-compose up --build -d  # Ensure everything is built and up
-          docker-compose exec sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
-
-      # Step 7: Tear down Docker Compose services after testing
-      - name: Tear down Docker Compose
-        if: github.event.pull_request.merged == false  # Clean up containers only for unmerged PRs
-        run: docker-compose down
+      # # Step 7: Tear down Docker Compose services after testing
+      # - name: Tear down Docker Compose
+      #   if: github.event.pull_request.merged == false  # Clean up containers only for unmerged PRs
+      #   run: docker-compose down
