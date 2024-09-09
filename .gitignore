@@ -5,7 +5,7 @@ sqlmesh_project/.cache
 sqlmesh_project/macros/__pycache__
 
 # Environment variable file
-.env
+#.env
 
 # Poetry lock file
 poetry.lock
