@@ -23,7 +23,7 @@ concurrency:
 jobs:
   sqlmesh:
     name: SQLMesh Actions Workflow
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
       issues: write  # Required to post comments
