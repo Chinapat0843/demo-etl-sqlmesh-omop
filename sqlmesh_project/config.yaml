@@ -1,0 +1,15 @@
+gateways:
+  local:
+    connection:
+      type: postgres
+      host: postgres
+      port: 5432
+      database: sqlmesh_db
+      user: sqlmesh_user
+      password: sqlmesh_password
+
+default_gateway: local
+
+model_defaults:
+  dialect: postgres
+  start: 2024-09-06s

@@ -1,15 +1,35 @@
 name: SQLMesh CI/CD Bot
+run-name: 🚀SQLMesh Bot 🚀
 
 on:
-  pull_request:
-    types:
-      - synchronize
-      - opened
-      - closed  # Triggers the workflow when a PR is closed or merged
+    pull_request:
+        types:
+            - synchronize
+            - opened
+      
+    pull_request_review:
+        types:
+            - edited
+            - submitted
+            - dismissed
+    issue_comment:
+        types:
+            - created
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+    cancel-in-progress: true
 
 jobs:
   sqlmesh:
+    name: SQLMesh Actions Workflow
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write  # Required to post comments
+      checks: write  # Required to update check runs
+      pull-requests: write  # Required to merge
+
 
     steps:
       # Step 1: Checkout the appropriate branch depending on PR status
