@@ -23,7 +23,7 @@ concurrency:
 jobs:
   sqlmesh:
     name: SQLMesh Actions Workflow
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
       issues: write  # Required to post comments
@@ -56,6 +56,8 @@ jobs:
           sudo curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version  # Verify that Docker Compose is installed
+
+
       # Step 4: Build and start Docker Compose services (for PRs that are not merged)
       - name: Build and start Docker Compose for testing
         if: github.event.pull_request.merged == false  # Only build and test if PR is not merged
@@ -69,27 +71,12 @@ jobs:
         run: |
           docker-compose up --build -d  # Build and start services in detached mode
           docker-compose exec sqlmesh poetry run sqlmesh info  # Run SQLMesh plan inside the container
+
       # Step 5: Run CI/CD Bot on PR branch (if not merged)
       - name: Run SQLMesh CI/CD Bot
-        env:
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
         run: |
-              echo ${{ github.event_path }}
-              echo ${{ github.repository }}
-              echo ${{ github.run_id }}
-              echo ${{ secrets.GITHUB_TOKEN }}
-              echo ${{ github.workspace }}
-      #   if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
-      #   run: |
-      #     docker-compose exec \
-      #       -e GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH} \
-      #       -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
-      #       -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
-      #       -e GITHUB_TOKEN=${GITHUB_TOKEN} \
-      #       sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
+            poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
 
       # # Step 6: Deploy to Production only if PR is merged into the main branch
       # - name: Deploy to Production
