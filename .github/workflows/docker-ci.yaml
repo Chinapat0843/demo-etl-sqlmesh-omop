@@ -76,7 +76,7 @@ jobs:
         if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
         run: |
           # Copy the GitHub event.json file to the Docker container
-          docker cp $GITHUB_EVENT_PATH sqlmesh:/github_event.json
+          docker cp $GITHUB_EVENT_PATH sqlmesh-container:/github_event.json
           
           # Run the bot inside the container, using the copied event.json file
           docker-compose exec sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --event-path /github_event.json --token ${{ secrets.GITHUB_TOKEN }} run-all
