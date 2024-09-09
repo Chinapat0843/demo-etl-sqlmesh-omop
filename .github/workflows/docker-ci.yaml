@@ -83,7 +83,7 @@ jobs:
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
         run: |
           docker-compose up --build -d  # Ensure everything is built and up
-          sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
+          docker-compose exec sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
 
       # Step 7: Tear down Docker Compose services after testing
       - name: Tear down Docker Compose
