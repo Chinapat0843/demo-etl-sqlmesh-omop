@@ -74,26 +74,33 @@ jobs:
 
       # Step 5: Run CI/CD Bot on PR branch (if not merged)
       - name: Run SQLMesh CI/CD Bot
-        if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Mount the GitHub event file so that it's available inside the container
-          docker-compose exec -t \
-            sqlmesh \
-            bash -c "mkdir -p /tmp/github_event && cp ${{ github.event_path }} /tmp/github_event/event.json && \
-                     GITHUB_EVENT_PATH=/tmp/github_event/event.json \
-                     GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
-                     GITHUB_RUN_ID=${GITHUB_RUN_ID} \
-                     GITHUB_TOKEN=${GITHUB_TOKEN} \
-                     poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all"
+              echo ${{ github.event_path }}
+              echo ${{ github.repository }}
+              echo ${{ github.run_id }}
+              echo ${{ secrets.GITHUB_TOKEN }}
+      #   if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
+      #   run: |
+      #     docker-compose exec \
+      #       -e GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH} \
+      #       -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
+      #       -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
+      #       -e GITHUB_TOKEN=${GITHUB_TOKEN} \
+      #       sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
 
-      # Step 6: Deploy to Production only if PR is merged into the main branch
-      - name: Deploy to Production
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-        run: |
-          docker-compose up --build -d  # Ensure everything is built and up
-          docker-compose exec sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
+      # # Step 6: Deploy to Production only if PR is merged into the main branch
+      # - name: Deploy to Production
+      #   if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+      #   run: |
+      #     docker-compose up --build -d  # Ensure everything is built and up
+      #     docker-compose exec sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
 
-      # Step 7: Tear down Docker Compose services after testing
-      - name: Tear down Docker Compose
-        if: github.event.pull_request.merged == false  # Clean up containers only for unmerged PRs
-        run: docker-compose down
+      # # Step 7: Tear down Docker Compose services after testing
+      # - name: Tear down Docker Compose
+      #   if: github.event.pull_request.merged == false  # Clean up containers only for unmerged PRs
+      #   run: docker-compose down
