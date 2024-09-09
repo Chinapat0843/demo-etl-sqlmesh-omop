@@ -76,12 +76,15 @@ jobs:
       - name: Run SQLMesh CI/CD Bot
         if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
         run: |
-          docker-compose exec \
-            -e GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH} \
-            -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
-            -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
-            -e GITHUB_TOKEN=${GITHUB_TOKEN} \
-            sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
+          # Mount the GitHub event file so that it's available inside the container
+          docker-compose exec -t \
+            sqlmesh \
+            bash -c "mkdir -p /tmp/github_event && cp ${{ github.event_path }} /tmp/github_event/event.json && \
+                     GITHUB_EVENT_PATH=/tmp/github_event/event.json \
+                     GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
+                     GITHUB_RUN_ID=${GITHUB_RUN_ID} \
+                     GITHUB_TOKEN=${GITHUB_TOKEN} \
+                     poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all"
 
       # Step 6: Deploy to Production only if PR is merged into the main branch
       - name: Deploy to Production
