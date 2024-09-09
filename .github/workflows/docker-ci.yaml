@@ -71,11 +71,15 @@ jobs:
           docker-compose up --build -d  # Build and start services in detached mode
           docker-compose exec sqlmesh poetry run sqlmesh info  # Run SQLMesh plan inside the container
 
-      # Step 5: Run SQLMesh CI/CD Bot inside the Docker container for unmerged PRs
-      - name: Run CI/CD Bot in Docker
+      # Step 5: Copy the GitHub event.json file to Docker and run SQLMesh CI/CD Bot inside the container
+      - name: Copy GitHub event to Docker container and run CI/CD Bot
         if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
         run: |
-          docker-compose exec sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --token ${{ secrets.GITHUB_TOKEN }} run-all
+          # Copy the GitHub event.json file to the Docker container
+          docker cp $GITHUB_EVENT_PATH sqlmesh:/github_event.json
+          
+          # Run the bot inside the container, using the copied event.json file
+          docker-compose exec sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --event-path /github_event.json --token ${{ secrets.GITHUB_TOKEN }} run-all
 
       # Step 6: Deploy to Production only if PR is merged into the main branch
       - name: Deploy to Production
