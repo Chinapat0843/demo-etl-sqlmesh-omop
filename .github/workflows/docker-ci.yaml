@@ -79,19 +79,23 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-              echo ${{ github.event_path }}
-              echo ${{ github.repository }}
-              echo ${{ github.run_id }}
-              echo ${{ secrets.GITHUB_TOKEN }}
-      #   if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
-      #   run: |
-      #     docker-compose exec \
-      #       -e GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH} \
-      #       -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
-      #       -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
-      #       -e GITHUB_TOKEN=${GITHUB_TOKEN} \
-      #       sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
+
+         if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
+         run: |
+        
+          # Create a directory to mount the event.json file
+          mkdir -p event_dir
+          
+          # Copy the GitHub event.json file to a temporary directory
+          cp ${{ github.event_path }} event_dir/
+
+
+          docker-compose exec \
+            -e GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH} \
+            -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
+            -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
+            -e GITHUB_TOKEN=${GITHUB_TOKEN} \
+            sqlmesh poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
 
       # # Step 6: Deploy to Production only if PR is merged into the main branch
       # - name: Deploy to Production
