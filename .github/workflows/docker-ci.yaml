@@ -72,20 +72,20 @@ jobs:
           docker-compose up --build -d  # Build and start services in detached mode
           docker-compose exec sqlmesh poetry run sqlmesh info  # Run SQLMesh plan inside the container
 
-    #   # Step 5: Run CI/CD Bot on PR branch (if not merged)
-    #   - name: Run SQLMesh CI/CD Bot
-    #     if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
-    #     run: |
-    #       sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
+      # Step 5: Run CI/CD Bot on PR branch (if not merged)
+      - name: Run SQLMesh CI/CD Bot
+        if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
+        run: |
+          sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
 
-    #   # Step 6: Deploy to Production only if PR is merged into the main branch
-    #   - name: Deploy to Production
-    #     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    #     run: |
-    #       docker-compose up --build -d  # Ensure everything is built and up
-    #       sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
+      # Step 6: Deploy to Production only if PR is merged into the main branch
+      - name: Deploy to Production
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+        run: |
+          docker-compose up --build -d  # Ensure everything is built and up
+          sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} deploy-production
 
-    #   # Step 7: Tear down Docker Compose services after testing
-    #   - name: Tear down Docker Compose
-    #     if: github.event.pull_request.merged == false  # Clean up containers only for unmerged PRs
-    #     run: docker-compose down
+      # Step 7: Tear down Docker Compose services after testing
+      - name: Tear down Docker Compose
+        if: github.event.pull_request.merged == false  # Clean up containers only for unmerged PRs
+        run: docker-compose down
