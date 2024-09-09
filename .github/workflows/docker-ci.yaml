@@ -104,7 +104,7 @@ jobs:
             -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
             -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
             -e GITHUB_TOKEN=${GITHUB_TOKEN} \
-            -e GITHUB_API_URL=${GITHUB_API_URL}  # Passing GITHUB_API_URL to the container 
+            -e GITHUB_API_URL=${GITHUB_API_URL}  # Passing GITHUB_API_URL to the container \
             sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --token ${{ secrets.GITHUB_TOKEN }} run-all
       # # Step 6: Deploy to Production only if PR is merged into the main branch
       # - name: Deploy to Production
