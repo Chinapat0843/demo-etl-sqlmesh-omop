@@ -56,6 +56,9 @@ jobs:
           sudo curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version  # Verify that Docker Compose is installed
+          pip install poetry
+          poetry install --no-root --no-dev
+          
 
 
       # Step 4: Build and start Docker Compose services (for PRs that are not merged)
