@@ -83,10 +83,28 @@ jobs:
           docker-compose exec sqlmesh poetry run sqlmesh info  # Run SQLMesh plan inside the container
 
       # Step 5: Run CI/CD Bot on PR branch (if not merged)
-      - name: Run SQLMesh CI/CD Bot
+      - name: Copy `event.json` to sqlmesh container and run CI/CD Bot
         if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          docker-compose exec sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --token ${{ secrets.GITHUB_TOKEN }} run-all
+          # Create a temporary directory and copy event.json into it
+          mkdir -p /tmp/github_event
+          cp ${{ github.event_path }} /tmp/github_event/event.json
+          
+          # Copy the event.json file into the sqlmesh container
+          docker cp /tmp/github_event/event.json sqlmesh-container:/tmp/event.json
+
+          # Run the CI/CD bot inside the sqlmesh container with the event.json file
+          docker-compose exec \
+            -e GITHUB_EVENT_PATH=/tmp/event.json \
+            -e GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
+            -e GITHUB_RUN_ID=${GITHUB_RUN_ID} \
+            -e GITHUB_TOKEN=${GITHUB_TOKEN} \
+            sqlmesh poetry run sqlmesh_cicd -p /app/sqlmesh_project github --token ${{ secrets.GITHUB_TOKEN }} run-all
       # # Step 6: Deploy to Production only if PR is merged into the main branch
       # - name: Deploy to Production
       #   if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
