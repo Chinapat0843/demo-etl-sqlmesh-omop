@@ -80,7 +80,7 @@ jobs:
         
         run: |
           docker-compose up --build -d  # Build and start services in detached mode
-          docker-compose exec sqlmesh poetry run sqlmesh plan  # Run SQLMesh plan inside the container
+          docker-compose exec sqlmesh poetry run sqlmesh info  # Run SQLMesh plan inside the container
 
       # Step 5: Run CI/CD Bot on PR branch (if not merged)
       - name: Run SQLMesh CI/CD Bot
