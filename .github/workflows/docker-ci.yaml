@@ -40,12 +40,6 @@ jobs:
 
     steps:
 
-      # Step 0: Setup Python 3.11
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
       # Step 1: Checkout the appropriate branch depending on PR status
       - name: Checkout PR branch
         if: github.event.pull_request.merged == false  # Only checkout PR branch if not merged
