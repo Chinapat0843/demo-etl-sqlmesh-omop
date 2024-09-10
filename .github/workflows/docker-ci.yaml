@@ -62,6 +62,8 @@ jobs:
       # Step 2: Install Docker Compose (fix the error)
       - name: Install packages
         run: |
+              export POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}"
+              
               pip install sqlmesh[cicd] pygithub psycopg2
 
 
