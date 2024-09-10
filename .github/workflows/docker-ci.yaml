@@ -62,15 +62,16 @@ jobs:
       # Step 2: Install Docker Compose (fix the error)
       - name: Install packages
         run: |
-          pip install sqlmesh["postgres","cicd"]
+          pip install poetry
+          poetry install
           
       # Step 5: Run CI/CD Bot on PR branch (if not merged)
       - name: Run CI/CD Bot on PR branch (if not merged)
         if: github.event.pull_request.merged == false  # Only run CI/CD bot on unmerged PRs
 
         run: |
-          sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
-          
+          poetry run sqlmesh_cicd -p ${{ github.workspace }} github --token ${{ secrets.GITHUB_TOKEN }} run-all
+
       # # Step 6: Deploy to Production only if PR is merged into the main branch
       # - name: Deploy to Production
       #   if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
