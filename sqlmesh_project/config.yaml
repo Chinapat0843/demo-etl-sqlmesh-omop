@@ -2,11 +2,11 @@ gateways:
   local:
     connection:
       type: postgres
-      host: ${{ secrets.POSTGRES_HOST}}
+      host: ${POSTGRES_HOST}
       port: 5432
-      database: ${{ secrets.POSTGRES_DB}}
-      user: ${{ secrets.POSTGRES_USER}}
-      password: ${{ secrets.POSTGRES_PASSWORD}}
+      database: ${POSTGRES_DB}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
 
 default_gateway: local
 
