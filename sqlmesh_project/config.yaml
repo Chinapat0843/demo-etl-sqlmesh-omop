@@ -4,9 +4,9 @@ gateways:
       type: postgres
       host: ${POSTGRES_HOST}
       port: 5432
-      database: ${POSTGRES_DB}
-      user: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}
+      database: sqlmesh_db
+      user: sqlmesh_user
+      password: sqlmesh_password
 
 default_gateway: local
 
